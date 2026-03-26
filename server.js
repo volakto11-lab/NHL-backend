@@ -37,9 +37,7 @@ app.get("/nhl", async (req, res) => {
       );
 
       const games =
-        response.data?.games ||
-        response.data?.scoreboard?.games ||
-        [];
+  response.data?.gamesByDate?.[0]?.games || [];
 
       allGames = allGames.concat(games);
     }
