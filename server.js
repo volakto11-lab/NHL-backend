@@ -22,3 +22,6 @@ app.get("/nhl", async (req, res) => {
     res.status(500).send("Chyba při načítání NHL dat");
   }
 });
+git add .
+git commit -m "add nhl endpoint"
+git push
