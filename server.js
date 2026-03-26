@@ -10,3 +10,15 @@ app.get("/", (req, res) => {
 app.listen(PORT, () => {
   console.log("Server běží na portu " + PORT);
 });
+const axios = require("axios");
+
+app.get("/nhl", async (req, res) => {
+  try {
+    const response = await axios.get(
+      "https://api-web.nhle.com/v1/scoreboard/now"
+    );
+    res.json(response.data);
+  } catch (error) {
+    res.status(500).send("Chyba při načítání NHL dat");
+  }
+});
