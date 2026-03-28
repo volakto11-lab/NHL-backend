@@ -4,21 +4,50 @@ const cors = require("cors");
 const app = express();
 app.use(cors());
 
-// TEST
+// 🧪 TEST
 app.get("/", (req, res) => {
   res.send("Backend běží");
 });
 
-// NHL DATA (jen fetch → žádné ukládání)
+// 🏒 NHL zápasy (včera + dnes + zítra)
 app.get("/nhl", async (req, res) => {
   try {
-    const response = await fetch(
-      "https://api-web.nhle.com/v1/scoreboard/now"
+    const today = new Date();
+
+    const formatDate = (d) => d.toISOString().split("T")[0];
+
+    const yesterday = new Date(today);
+    yesterday.setDate(today.getDate() - 1);
+
+    const tomorrow = new Date(today);
+    tomorrow.setDate(today.getDate() + 1);
+
+    const urls = [
+      `https://api-web.nhle.com/v1/scoreboard/${formatDate(yesterday)}`,
+      `https://api-web.nhle.com/v1/scoreboard/${formatDate(today)}`,
+      `https://api-web.nhle.com/v1/scoreboard/${formatDate(tomorrow)}`,
+    ];
+
+    const responses = await Promise.all(
+      urls.map((url) => fetch(url))
     );
-    const data = await response.json();
-    res.json(data);
+
+    const datas = await Promise.all(
+      responses.map((r) => r.json())
+    );
+
+    // 🔥 spojení všech zápasů
+    const allGames = datas.flatMap(
+      (d) => d?.games || d?.dates?.[0]?.games || []
+    );
+
+    res.json({ games: allGames });
   } catch (e) {
-    console.log(e);
-    res.status(500).json({ error: "Chyba
+    console.log("CHYBA:", e);
+    res.status(500).json({ error: "Chyba NHL API" });
+  }
+});
+
+// 🚀 start serveru
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log("Server běží na portu " + PORT));
