@@ -37,9 +37,9 @@ app.get("/nhl", async (req, res) => {
     );
 
     // 🔥 spojení všech zápasů
-    const allGames = datas.flatMap(
-      (d) => d?.games || d?.dates?.[0]?.games || []
-    );
+    const allGames = datas.flatMap((d) =>
+  d?.gameWeek?.flatMap((day) => day.games) || []
+);
 
     res.json({ games: allGames });
   } catch (e) {
