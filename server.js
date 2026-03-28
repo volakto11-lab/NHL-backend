@@ -1,15 +1,14 @@
 const express = require("express");
 const cors = require("cors");
+const fetch = require("node-fetch");
 
 const app = express();
 app.use(cors());
 
-// 🧪 TEST
 app.get("/", (req, res) => {
   res.send("Backend běží");
 });
 
-// 🏒 NHL zápasy (včera + dnes + zítra)
 app.get("/nhl", async (req, res) => {
   try {
     const today = new Date();
@@ -31,8 +30,8 @@ app.get("/nhl", async (req, res) => {
     const responses = await Promise.all(urls.map((url) => fetch(url)));
     const datas = await Promise.all(responses.map((r) => r.json()));
 
-    const allGames = datas.flatMap((d) =>
-      d?.gameWeek?.flatMap((day) => day.games) || []
+    const allGames = datas.flatMap(
+      (d) => d?.games || []
     );
 
     res.json({ games: allGames });
@@ -42,6 +41,5 @@ app.get("/nhl", async (req, res) => {
   }
 });
 
-// 🚀 start serveru
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log("Server běží na portu " + PORT));
