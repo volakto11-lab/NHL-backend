@@ -28,18 +28,12 @@ app.get("/nhl", async (req, res) => {
       `https://api-web.nhle.com/v1/scoreboard/${formatDate(tomorrow)}`,
     ];
 
-    const responses = await Promise.all(
-      urls.map((url) => fetch(url))
-    );
+    const responses = await Promise.all(urls.map((url) => fetch(url)));
+    const datas = await Promise.all(responses.map((r) => r.json()));
 
-    const datas = await Promise.all(
-      responses.map((r) => r.json())
-    );
-
-    // 🔥 spojení všech zápasů
     const allGames = datas.flatMap((d) =>
-  d?.gameWeek?.flatMap((day) => day.games) || []
-);
+      d?.gameWeek?.flatMap((day) => day.games) || []
+    );
 
     res.json({ games: allGames });
   } catch (e) {
