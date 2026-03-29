@@ -10,31 +10,22 @@ app.get("/", (req, res) => {
 
 app.get("/nhl", async (req, res) => {
   try {
-    const formatDate = (d) => d.toISOString().split("T")[0];
+    const response = await fetch("https://api-web.nhle.com/v1/schedule/now");
+    const data = await response.json();
 
-    const today = new Date();
+    // 🔥 vytáhne zápasy z gameWeek
+    const games =
+      data?.gameWeek?.flatMap((day) => day.games) || [];
 
-    // 🔥 vytvoří -7 až +7 dní
-    const dates = [];
-    for (let i = -7; i <= 7; i++) {
-      const d = new Date(today);
-      d.setDate(today.getDate() + i);
-      dates.push(formatDate(d));
-    }
+    res.json({ games });
+  } catch (e) {
+    console.log("CHYBA:", e);
+    res.status(500).json({ error: "Chyba NHL API" });
+  }
+});
 
-    // 🔥 fetch všech dnů
-    const responses = await Promise.all(
-      dates.map((date) =>
-        fetch(`https://api-web.nhle.com/v1/scoreboard/${date}`)
-      )
-    );
-
-    const datas = await Promise.all(responses.map((r) => r.json()));
-
-    // 🔥 parsování (univerzální)
-    const allGames = datas.flatMap((d) => {
-      if (d?.games) return d.games;
-      if (d?.dates?.[0]?.games) return d.dates[0].games;
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log("Server běží na portu " + PORT));      if (d?.dates?.[0]?.games) return d.dates[0].games;
       return [];
     });
 
