@@ -10,15 +10,35 @@ app.get("/", (req, res) => {
 
 app.get("/nhl", async (req, res) => {
   try {
-    const response = await fetch("https://api-web.nhle.com/v1/scoreboard/now");
-    const data = await response.json();
+    const formatDate = (d) => d.toISOString().split("T")[0];
 
-    const games =
-      data?.games ||
-      data?.scoreboard?.games ||
-      [];
+    const today = new Date();
 
-    res.json({ games });
+    // 🔥 vytvoří -7 až +7 dní
+    const dates = [];
+    for (let i = -7; i <= 7; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() + i);
+      dates.push(formatDate(d));
+    }
+
+    // 🔥 fetch všech dnů
+    const responses = await Promise.all(
+      dates.map((date) =>
+        fetch(`https://api-web.nhle.com/v1/scoreboard/${date}`)
+      )
+    );
+
+    const datas = await Promise.all(responses.map((r) => r.json()));
+
+    // 🔥 parsování (univerzální)
+    const allGames = datas.flatMap((d) => {
+      if (d?.games) return d.games;
+      if (d?.dates?.[0]?.games) return d.dates[0].games;
+      return [];
+    });
+
+    res.json({ games: allGames });
   } catch (e) {
     console.log("CHYBA:", e);
     res.status(500).json({ error: "Chyba NHL API" });
