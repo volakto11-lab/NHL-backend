@@ -29,9 +29,11 @@ app.get("/nhl", async (req, res) => {
     const responses = await Promise.all(urls.map((url) => fetch(url)));
     const datas = await Promise.all(responses.map((r) => r.json()));
 
-    const allGames = datas.flatMap(
-      (d) => d?.games || []
-    );
+    const allGames = datas.flatMap((d) => {
+  if (d?.games) return d.games;
+  if (d?.dates?.[0]?.games) return d.dates[0].games;
+  return [];
+});
 
     res.json({ games: allGames });
   } catch (e) {
