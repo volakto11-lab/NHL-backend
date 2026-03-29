@@ -10,32 +10,15 @@ app.get("/", (req, res) => {
 
 app.get("/nhl", async (req, res) => {
   try {
-    const today = new Date();
+    const response = await fetch("https://api-web.nhle.com/v1/scoreboard/now");
+    const data = await response.json();
 
-    const formatDate = (d) => d.toISOString().split("T")[0];
+    const games =
+      data?.games ||
+      data?.scoreboard?.games ||
+      [];
 
-    const yesterday = new Date(today);
-    yesterday.setDate(today.getDate() - 1);
-
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1);
-
-    const urls = [
-      `https://api-web.nhle.com/v1/scoreboard/${formatDate(yesterday)}`,
-      `https://api-web.nhle.com/v1/scoreboard/${formatDate(today)}`,
-      `https://api-web.nhle.com/v1/scoreboard/${formatDate(tomorrow)}`,
-    ];
-
-    const responses = await Promise.all(urls.map((url) => fetch(url)));
-    const datas = await Promise.all(responses.map((r) => r.json()));
-
-    const allGames = datas.flatMap((d) => {
-  if (d?.games) return d.games;
-  if (d?.dates?.[0]?.games) return d.dates[0].games;
-  return [];
-});
-
-    res.json({ games: allGames });
+    res.json({ games });
   } catch (e) {
     console.log("CHYBA:", e);
     res.status(500).json({ error: "Chyba NHL API" });
