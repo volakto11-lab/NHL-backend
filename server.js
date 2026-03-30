@@ -5,10 +5,12 @@ const axios = require("axios");
 const app = express();
 app.use(cors());
 
+// TEST
 app.get("/", (req, res) => {
   res.send("Backend běží");
 });
 
+// NHL endpoint
 app.get("/nhl", async (req, res) => {
   try {
     const response = await axios.get(
@@ -27,8 +29,8 @@ app.get("/nhl", async (req, res) => {
   }
 });
 
+// START SERVERU
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log("Server běží na portu " + PORT));});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log("Server běží na portu " + PORT));
+app.listen(PORT, () => {
+  console.log("Server běží na portu " + PORT);
+});
